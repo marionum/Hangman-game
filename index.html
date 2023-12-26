@@ -1,0 +1,506 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <title>Hangman game</title>
+
+    <style>
+        body{
+        margin:32px  50px;
+        padding:0;
+
+        background  :#f8f9fa; 
+        }
+
+        main{
+        padding:16px;
+
+        background: white;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+ 
+        *{
+        font-family:"Montserrat",sans-serif;
+        color:#2b2d42;
+        }
+
+
+        button{
+        padding:10px 50px;
+        background:#e7c6ff;
+        border-radius:3px;
+        border:1px solid #c8b6ff;
+        cursor:pointer;
+        }
+
+        .hang-place-outer{
+            background: #e9c46a;
+
+            display: flex;
+            justify-content: center;
+
+            height: 447.55px;
+        }
+
+        .hang-place{
+            position: relative;
+            width:300px;
+
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .full{
+            width: 100%;
+         
+        }
+
+        .rope{
+            width: 300px;
+
+            opacity: 0; 
+      
+        }
+
+        .hang-place span{
+            position: absolute;
+
+            opacity: 0; 
+        }
+
+        .arm1{
+            top: 250px;
+            left: 65px;
+
+            transform: rotate(-30deg);
+        }
+
+        .arm2{
+            top: 250px;
+            left: 130px;
+
+            transform: rotate(30deg);
+        }
+
+        .head{
+            top: 190px;
+            left: 125px;
+
+            transform: scale(5);
+        }
+
+        .body{
+            top: 280px;
+            left: 75px;
+
+            transform: rotate(90deg);
+        }
+
+        .leg1{
+            top: 355px;
+            left: 65px;
+
+            transform: rotate(-30deg);
+        }
+
+        .leg2{
+            top: 355px;
+            left: 130px;
+
+            transform: rotate(30deg);
+        }
+
+        .eye1{
+            top: 190px;
+            left: 110px;
+
+           
+        }
+
+        .eye2{
+            top: 190px;
+            left: 140px;
+        }
+
+        .mouth{
+            top: 210px;
+            left: 120px;
+        }
+
+        #hidden-characters {
+            display: flex;
+            flex-flow: row wrap;
+            
+            gap: 16px;
+        }
+
+        .char{
+            flex-basis: 64px;
+
+            background: #edede9;
+            border: 1px solid #dad7cd;
+            text-align: center;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        #allowed-characters{
+            display: flex;
+            flex-flow: row wrap;
+            
+            gap: 2px;
+        }
+
+        #allowed-characters button {
+            width: 40px;
+        }
+
+        .restart-section {
+            display: none;
+        }
+
+        .highlight-red{
+            color: #e76f51;
+        }
+
+        .highlight-success{
+            color:#2a9d8f;
+        }
+
+        .timer-section{
+            display: none;
+
+            position: fixed;
+            top: 40px;
+            right: 64px;
+
+            background: #e76f51;
+            color: white;
+            font-weight: 700;
+
+            text-shadow: 1px 1px 1px black;
+
+            padding: 8px 16px;
+            border-radius: 10px;
+
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+
+        
+      
+      
+
+    </style>
+</head>
+<body>
+
+<main>
+    <!--Welcome-->
+    <h1>Hangman game</h1>
+    <hr>
+
+    <p>
+        The Hangman Challenge is an exciting word puzzle game where you have to guess a secret word by selecting the letters. You have only limited attempts and a limited time before the hangman is fully drawn. Challenge your word skills and try to save the hangman! I have programmed this game for you. Enjoy playing!
+    </p>
+
+    <hr>
+
+    <!--Wort festlegen-->
+    <div class="form-div">
+        <label for="myWord">
+            <strong>
+                "Choose a word:"
+            </strong>
+        </label>
+        <br>
+        <input type="text" name="myWord" id="myWord" autocomplete="off">
+        <br>
+        <button type="button" onclick="setWord()">Ready</button>
+    </div>
+
+    <hr>
+
+    <div class="hang-place-outer">
+        <div class="hang-place">
+            <img class="rope" src="rope.png">
+            <span class="head">○</span>
+            <span class="arm1">–––––––––</span>
+            <span class="arm2">–––––––––</span>
+            <span class="body">–––––––––––––––</span>
+            <span class="leg1">–––––––––</span>
+            <span class="leg2">–––––––––</span>
+            <span class="eye1">x</span>
+            <span class="eye2">x</span>
+            <span class="mouth">–––</span>
+        </div>
+    </div>
+
+    <hr>
+
+    <!--Gesuchtes Wort-->
+    <div class="secret-word">
+        <p>
+            <strong>
+                You are looking for the following word:
+                <span id="displayed-word"></span>
+            </strong>
+        </p>
+        <div id="hidden-characters">
+        </div>
+    </div>
+
+    <hr>
+
+    <!--Raten-->
+    <div class="guess">
+        <p>
+            <i>
+                Click on the letter to make a guess!
+            </i>
+            <br>
+            <strong>
+                <span id="guessResultContainer">
+                    &nbsp;
+                    <br>
+                    &nbsp;
+                </span>
+            </strong>
+        </p>
+        <div id="allowed-characters">
+        </div>
+    </div>
+
+    <!--Restart Button-->
+    <div class="restart-section">
+        <hr>
+        <button type="button" onclick="restartGame()">Restart the game!</button> 
+        <hr>
+    <button type="button" onclick="saveGameData()">Save Game Data</button>
+    </div>
+
+    <!--Timer-->
+    <div class="timer-section"></div>
+
+    <script>
+        let myWord = '';
+        let myWordChars = [];
+        let allowedChars = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZÜÖÄẞ'];
+        let blockedChars = [...'1234567890+#,.-{[()!"§$&/=)]}'];
+        let wordIsSet = false;
+        let tries = 0;
+        const triesMax = 10;
+        let hiddenChars = [];
+        let theGameIsOver = false;
+        let wonTheGame = false;
+
+        function setWord() {
+            myWord = document.getElementById('myWord').value.toUpperCase();
+            let wordLengthNotSuitable = myWord.length > 20 || myWord.length < 3;
+            let wordCharsNotSuitable = false;
+            myWordChars = [...myWord];
+
+            for (let i = 0; i < blockedChars.length; i++) {
+                if (myWord.includes(blockedChars[i])) {
+                    wordCharsNotSuitable = true;
+                }
+            }
+
+            if (wordLengthNotSuitable) {
+                alert("The word is too long/short. Min 3 Max 20.");
+            } else if (wordCharsNotSuitable) {
+                alert("The entered characters are not allowed. Following characters are allowed: " + allowedChars);
+            } else {
+                displayWordChars();
+                wordIsSet = true;
+                startGame();
+                document.getElementById('myWord').value = '';
+            }
+        }
+
+        function displayWordChars() {
+            let myText = '';
+            for (let i = 0; i < myWordChars.length; i++) {
+                myText += "<div class='char'>&nbsp;</div>";
+            }
+            document.getElementById('hidden-characters').innerHTML = myText;
+        }
+
+        function createCharButtons() {
+            let myText = '';
+            for (let i = 0; i < allowedChars.length; i++) {
+                myText += `<button type='button' onclick='guessChar("${allowedChars[i]}")'>${allowedChars[i]}</button>`;
+            }
+            document.getElementById('allowed-characters').innerHTML = myText;
+        }
+        createCharButtons();
+
+        function guessChar(x) {
+            let guessResult = false;
+            if (!wordIsSet) {
+                alert("You must first choose a word!")
+            } else {
+                guessResult = myWord.includes(x);
+                if (guessResult) {
+                    document.getElementById("guessResultContainer").innerHTML = `Correct guess! The sought word contains ${x}!<br>${triesMax - tries} Try again...`;
+                    showChar(x); // Call showChar with the correct guess
+                } else {
+                    tries++;
+                    document.getElementById("guessResultContainer").innerHTML = `Wrong guess! The sought word does not contain ${x}!<br>${triesMax - tries} Try again..`;
+                    hangTheMan();
+                }
+            }
+        }
+
+        function showChar(x) {
+            let positions = [];
+            for (let i = 0; i < myWordChars.length; i++) {
+                if (myWordChars[i] === x) {
+                    positions.push(i);
+                }
+            }
+
+            for (let i = 0; i < positions.length; i++) {
+                const charElement = document.getElementById('hidden-characters').getElementsByClassName('char')[positions[i]];
+                charElement.innerText = x;
+                charElement.classList.add('highlight-success'); // Add this line to highlight the correct guess
+            }
+
+            updateWordDisplay(); // Add this line to update the displayed word
+            CheckGuessedAll();
+        }
+
+        function updateWordDisplay() {
+            let displayedWord = '';
+            for (let i = 0; i < myWordChars.length; i++) {
+                displayedWord += document.getElementById('hidden-characters').getElementsByClassName('char')[i].innerText;
+            }
+            document.getElementById('displayed-word').innerText = displayedWord;
+        }
+
+        function CheckGuessedAll() {
+            hiddenChars = [];
+            let guessedAll = true;
+            for (let i = 0; i < myWordChars.length; i++) {
+                hiddenChars.push(document.getElementById('hidden-characters').getElementsByClassName('char')[i].innerText);
+            }
+
+            for (let i = 0; i < myWordChars.length; i++) {
+                if (myWordChars[i] !== hiddenChars[i]) {
+                    guessedAll = false;
+                    break;
+                }
+            }
+
+            if (guessedAll) {
+                gameWon();
+            }
+        }
+
+        function hangTheMan() {
+            let partToHang = "";
+            let partToHangConnector = {
+                1: "rope",
+                2: 'head',
+                3: 'arm1',
+                4: 'arm2',
+                5: 'body',
+                6: 'leg1',
+                7: 'leg2',
+                8: 'eye1',
+                9: 'eye2',
+                10: 'mouth',
+            };
+
+            partToHang = partToHangConnector[tries];
+            document.getElementsByClassName(partToHang)[0].style.opacity = 1;
+
+            if (tries === 10) {
+                gameOver();
+            }
+        }
+
+        function gameOver(timeOver = false) {
+            if (timeOver && !theGameIsOver) {
+                alert("Game over!");
+                
+            }
+
+            theGameIsOver = true;
+            document.getElementById("guessResultContainer").innerHTML += `<br><span class="highlight-red">Unfortunately, you have lost! The sought word was "${myWord}"…</span>`;
+            hideAllowedCharsAndShowRestartButton();
+        }
+
+        function gameWon() {
+            document.getElementById("guessResultContainer").innerHTML += '<br><span class="highlight-success"> Game won!</span>';
+            hideAllowedCharsAndShowRestartButton();
+            wonTheGame = true;
+        }
+
+        function hideAllowedCharsAndShowRestartButton() {
+            document.getElementById('allowed-characters').style.display = 'none';
+            document.getElementsByClassName('restart-section')[0].style.display = 'unset';
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+function saveGameData() {
+    if (!wordIsSet) {
+        alert("You cannot save the game data until the word is set.");
+        return;
+    }
+
+    const word = myWord;
+    const seconds = availableTime / 1000; // Convert milliseconds to seconds
+
+    // Send data to the server using fetch
+    fetch('https://newgameapp.azurewebsites.net/api/saveGameData', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ word, seconds }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to save game data');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Game data saved successfully!');
+        } else {
+            alert('Failed to save game data');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving game data:', error);
+        alert('An error occurred while saving game data');
+    });
+}
+
+        let availableTime = 5 * 60 * 1000;
+
+        function startGame() {
+            setTimeout(gameOver, availableTime, true);
+            setInterval(myTimer, 1000);
+        }
+
+        function myTimer() {
+            if (availableTime > 0 && !theGameIsOver && !wonTheGame) {
+                availableTime -= 1000;
+                document.getElementsByClassName('timer-section')[0].style.display = 'unset';
+                document.getElementsByClassName('timer-section')[0].innerText = `${availableTime / 1000} Seconds left!`;
+            }
+        }
+    </script>
+</main>
+
+</body>
+</html>
